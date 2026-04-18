@@ -631,8 +631,24 @@ def execute_stage(
             candidate = LLMClient.from_rc_config(config)
             if candidate.config.base_url and candidate.config.api_key:
                 llm = candidate
+            else:
+                _missing = []
+                if not candidate.config.base_url:
+                    _missing.append("base_url")
+                if not candidate.config.api_key:
+                    _missing.append("api_key (check api_key_env or api_key in config)")
+                logger.warning(
+                    "LLM client not initialized: missing %s. "
+                    "Stage %s will use fallback/template data.",
+                    ", ".join(_missing),
+                    stage.name,
+                )
     except Exception as _llm_exc:  # noqa: BLE001
-        logger.warning("LLM client creation failed: %s", _llm_exc)
+        logger.warning(
+            "LLM client creation failed: %s. Stage %s will use fallback/template data.",
+            _llm_exc,
+            stage.name,
+        )
         llm = None
 
     try:

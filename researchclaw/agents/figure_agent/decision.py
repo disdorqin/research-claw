@@ -50,15 +50,18 @@ For each figure, decide:
    "Results", "Introduction", "Architecture")
 2. **figure_type** — A descriptive type:
    - For data/experiment figures: "bar_comparison", "line_chart", "heatmap",
-     "confusion_matrix", "training_curve", "ablation_chart", "scatter_plot"
+     "confusion_matrix", "training_curve", "ablation_chart", "scatter_plot",
+     "violin_box", "box_plot", "radar_chart", "roc_curve", "embedding_plot"
    - For conceptual/architecture figures: "architecture_diagram",
      "method_flowchart", "pipeline_overview", "concept_illustration",
      "system_diagram", "attention_visualization", "comparison_illustration"
 3. **backend** — Which generation backend:
-   - "code" for data-driven charts (bar charts, line plots, heatmaps) → will
-     be generated via Matplotlib/Seaborn or TikZ/PGFPlots
-   - "image" for conceptual diagrams (architecture, pipeline, method) → will
-     be generated via Gemini Nano Banana image generation
+   - "code" for data-driven charts (bar charts, line plots, heatmaps,
+     violin plots, radar charts, ROC curves, etc.) → will be generated
+     via Matplotlib/Seaborn or TikZ/PGFPlots
+   - "image" for conceptual diagrams (architecture, pipeline, method,
+     flowcharts, system diagrams) → will be generated via multi-backend
+     image generation (Gemini / OpenAI Image / Excalidraw / Matplotlib)
 4. **description** — A detailed description of what the figure should show
 5. **priority** — 1 (essential) to 3 (nice-to-have)
 
@@ -371,7 +374,8 @@ class FigureDecisionAgent(BaseAgent):
         code_types = {
             "bar_comparison", "line_chart", "heatmap", "confusion_matrix",
             "training_curve", "ablation_chart", "scatter_plot", "line_multi",
-            "grouped_bar", "loss_curve",
+            "grouped_bar", "loss_curve", "violin_box", "box_plot",
+            "radar_chart", "roc_curve", "embedding_plot", "ablation_grouped",
         }
         if figure_type in code_types:
             return "code"

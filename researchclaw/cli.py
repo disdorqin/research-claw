@@ -153,6 +153,16 @@ def _generate_run_id(topic: str) -> str:
     return f"rc-{ts}-{topic_hash}"
 
 
+def _ensure_run_dir_skeleton(run_dir: Path) -> None:
+    """Create the standard subdirectory skeleton for a new run.
+
+    This ensures every run starts with a consistent, organized layout
+    instead of dumping everything into a flat directory.
+    """
+    for subdir in ("config", "scripts", "datasets", "papers", "logs"):
+        (run_dir / subdir).mkdir(parents=True, exist_ok=True)
+
+
 def cmd_run(args: argparse.Namespace) -> int:
     resolved = _resolve_config_or_exit(args)
     if resolved is None:
@@ -253,6 +263,7 @@ def cmd_run(args: argparse.Namespace) -> int:
                 )
 
     run_dir.mkdir(parents=True, exist_ok=True)
+    _ensure_run_dir_skeleton(run_dir)
 
     if config.knowledge_base.root:
         kb_root_path = Path(config.knowledge_base.root)

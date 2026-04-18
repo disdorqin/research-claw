@@ -64,7 +64,7 @@ CONTRACTS: dict[Stage, StageContract] = {
         output_files=("shortlist.jsonl",),
         dod="Relevance + quality dual screening completed and approved",
         error_code="E05_GATE_REJECT",
-        max_retries=0,
+        max_retries=2,
     ),
     Stage.KNOWLEDGE_EXTRACT: StageContract(
         stage=Stage.KNOWLEDGE_EXTRACT,
@@ -95,7 +95,7 @@ CONTRACTS: dict[Stage, StageContract] = {
         output_files=("exp_plan.yaml",),
         dod="Experiment plan with baselines, ablations, metrics approved",
         error_code="E09_GATE_REJECT",
-        max_retries=0,
+        max_retries=2,
     ),
     Stage.CODE_GENERATION: StageContract(
         stage=Stage.CODE_GENERATION,

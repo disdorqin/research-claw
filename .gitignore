@@ -95,3 +95,22 @@ scripts/md2pdf.py
 docs/tasks/
 docs/feature_expansion_analysis.*
 docs/tester_guide_cn.*
+
+# Research output (local run artifacts)
+research_output*/
+
+# Test scripts (local only, not the formal tests/ directory)
+/test_image_gen.py
+/test_*.py
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Trae rules (local)
+.trae/
+
+# Trace/debug outputs
+test_trace_func_output.txt

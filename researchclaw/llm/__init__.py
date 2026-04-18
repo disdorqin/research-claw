@@ -35,6 +35,9 @@ PROVIDER_PRESETS = {
     "gemini": {
         "base_url": "https://generativelanguage.googleapis.com/v1beta",
     },
+    "xiavier": {
+        "base_url": "https://api.xiavier.com/v1",
+    },
     "openai-compatible": {
         "base_url": None,  # Use user-provided base_url
     },
@@ -53,6 +56,7 @@ def create_llm_client(config: RCConfig) -> LLMClient | ACPClient:
     - ``"novita"`` → :class:`LLMClient` with Novita AI base URL
     - ``"minimax"`` → :class:`LLMClient` with MiniMax base URL
     - ``"gemini"`` → :class:`LLMClient` with Gemini Native Adapter
+    - ``"xiavier"`` → :class:`LLMClient` with Xiavier API base URL
     - ``"openai-compatible"`` (default) → :class:`LLMClient` with custom base_url
 
     OpenRouter is fully compatible with the OpenAI API format, making it

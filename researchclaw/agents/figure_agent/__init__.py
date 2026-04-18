@@ -11,6 +11,9 @@ Architecture
    and visual quality assessment.
 5. **Integrator** — determines figure placement in the paper and
    generates markdown references with captions.
+6. **ImageGen** — multi-backend image generation for conceptual figures
+   (architecture diagrams, flowcharts, etc.) with fallback chain:
+   Gemini → OpenAI Image → Smart-Excalidraw → Excalidraw LLM → Matplotlib fallback.
 
 The ``FigureOrchestrator`` coordinates all agents and produces a
 ``FigurePlan`` consumed by downstream pipeline stages (paper draft,
@@ -21,5 +24,22 @@ from researchclaw.agents.figure_agent.orchestrator import (
     FigureOrchestrator,
     FigurePlan,
 )
+from researchclaw.agents.figure_agent.image_gen import (
+    ImageGenAgent,
+    BACKEND_GEMINI,
+    BACKEND_OPENAI_IMAGE,
+    BACKEND_SMART_EXCALIDRAW,
+    BACKEND_EXCALIDRAW_LLM,
+    BACKEND_MATPLOTLIB_FALLBACK,
+)
 
-__all__ = ["FigureOrchestrator", "FigurePlan"]
+__all__ = [
+    "FigureOrchestrator",
+    "FigurePlan",
+    "ImageGenAgent",
+    "BACKEND_GEMINI",
+    "BACKEND_OPENAI_IMAGE",
+    "BACKEND_SMART_EXCALIDRAW",
+    "BACKEND_EXCALIDRAW_LLM",
+    "BACKEND_MATPLOTLIB_FALLBACK",
+]

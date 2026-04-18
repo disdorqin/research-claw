@@ -1,10 +1,12 @@
 """Unified literature search with deduplication.
 
-Combines results from OpenAlex, Semantic Scholar, and arXiv,
+Combines results from OpenAlex, Semantic Scholar, arXiv, and
+daily_arxiv (pre-crawled AI-enhanced papers from power-papers-daily),
 deduplicates by DOI → arXiv ID → fuzzy title match, and returns
 a merged list sorted by citation count (descending).
 
-Source priority: OpenAlex (most generous limits) → Semantic Scholar → arXiv.
+Source priority: daily_arxiv (cached, zero API cost) → OpenAlex →
+Semantic Scholar → arXiv.
 If any source hits rate limits, remaining sources compensate automatically.
 
 Public API
@@ -25,6 +27,7 @@ import urllib.error
 from typing import cast
 
 from researchclaw.literature.arxiv_client import search_arxiv
+from researchclaw.literature.daily_arxiv_source import search_daily_arxiv
 from researchclaw.literature.models import Author, Paper
 from researchclaw.literature.openalex_client import search_openalex
 from researchclaw.literature.semantic_scholar import search_semantic_scholar
@@ -33,7 +36,7 @@ logger = logging.getLogger(__name__)
 
 # OpenAlex first (10K/day), then S2 (1K/5min), then arXiv (1/3s) — least
 # pressure on the most restrictive API.
-_DEFAULT_SOURCES = ("openalex", "semantic_scholar", "arxiv")
+_DEFAULT_SOURCES = ("daily_arxiv", "openalex", "semantic_scholar", "arxiv")
 
 
 CacheGet = Callable[[str, str, int], list[dict[str, object]] | None]
@@ -182,6 +185,17 @@ def search_papers(
                 cache_put(query, "arxiv", limit, _papers_to_dicts(papers))
                 source_stats["arxiv"] = len(papers)
                 logger.info("arXiv returned %d papers for %r", len(papers), query)
+
+            elif src_lower == "daily_arxiv":
+                papers = search_daily_arxiv(query, limit=limit)
+                if year_min > 0:
+                    papers = [p for p in papers if p.year >= year_min]
+                all_papers.extend(papers)
+                cache_put(query, "daily_arxiv", limit, _papers_to_dicts(papers))
+                source_stats["daily_arxiv"] = len(papers)
+                logger.info(
+                    "daily_arxiv returned %d papers for %r", len(papers), query
+                )
 
             else:
                 logger.warning("Unknown literature source: %s (skipped)", src)

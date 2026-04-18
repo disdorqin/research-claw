@@ -381,10 +381,10 @@ def _execute_literature_collect(
             logger.info(
                 "[literature] Found %d papers (%s)", len(papers), src_str
             )
-    except Exception:  # noqa: BLE001
+    except Exception as _search_exc:  # noqa: BLE001
         logger.warning(
-            "[rate-limit] Literature search failed — falling back to LLM",
-            exc_info=True,
+            "[literature] Real API search failed: %s — falling back to LLM/seminal",
+            _search_exc,
         )
 
     # --- Inject foundational/seminal papers ---
@@ -695,16 +695,25 @@ def _execute_literature_screen(
     # T2.2: Ensure minimum shortlist size of 15 for adequate related work
     _MIN_SHORTLIST = 15
     if not shortlist:
-        rows = (
-            filtered_rows[:_MIN_SHORTLIST]
+        _fallback_rows = (
+            filtered_rows
             if filtered_rows
-            else _parse_jsonl_rows(candidates_text)[:_MIN_SHORTLIST]
+            else _parse_jsonl_rows(candidates_text)
         )
-        for idx, item in enumerate(rows):
+        _fallback_rows = sorted(
+            _fallback_rows,
+            key=lambda r: r.get("keyword_overlap", 0),
+            reverse=True,
+        )
+        for idx, item in enumerate(_fallback_rows[:_MIN_SHORTLIST]):
             item["relevance_score"] = round(0.75 - idx * 0.02, 3)
             item["quality_score"] = round(0.72 - idx * 0.015, 3)
-            item["keep_reason"] = "Template screened entry"
+            item["keep_reason"] = "Keyword-overlap fallback (LLM screening unavailable)"
             shortlist.append(item)
+        logger.warning(
+            "Stage 5: LLM screening empty — selected %d papers by keyword overlap",
+            len(shortlist),
+        )
     elif len(shortlist) < _MIN_SHORTLIST:
         # T2.2: LLM returned too few — supplement from filtered candidates
         existing_titles = {

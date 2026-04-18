@@ -115,7 +115,15 @@ def _execute_experiment_run(
 
     schedule_text = _read_prior_artifact(run_dir, "schedule.json") or "{}"
     # Try multi-file experiment directory first, fall back to single file
-    exp_dir_path = _read_prior_artifact(run_dir, "experiment/")
+    # Priority: stage-13 (refined) > stage-10 (original) > any other stage
+    exp_dir_path: str | None = None
+    for _preferred_stage in ("stage-13", "stage-10"):
+        _candidate = run_dir / _preferred_stage / "experiment"
+        if _candidate.is_dir() and any(_candidate.iterdir()):
+            exp_dir_path = str(_candidate)
+            break
+    if not exp_dir_path:
+        exp_dir_path = _read_prior_artifact(run_dir, "experiment/")
     code_text = ""
     if exp_dir_path and Path(exp_dir_path).is_dir():
         main_path = Path(exp_dir_path) / "main.py"
@@ -395,10 +403,13 @@ def _execute_iterative_refine(
         (stage_dir / "refinement_log.json").write_text(
             json.dumps(log, indent=2), encoding="utf-8"
         )
+        final_dir = stage_dir / "experiment_final"
+        final_dir.mkdir(parents=True, exist_ok=True)
+        (final_dir / ".gitkeep").write_text("", encoding="utf-8")
         return StageResult(
             stage=Stage.ITERATIVE_REFINE,
             status=StageStatus.DONE,
-            artifacts=("refinement_log.json",),
+            artifacts=("refinement_log.json", "experiment_final/"),
             evidence_refs=(),
         )
 
@@ -677,7 +688,10 @@ def _execute_iterative_refine(
         if iteration is not None:
             log["pause_iteration"] = iteration
         _write_refinement_log()
-        artifacts = ("refinement_log.json",)
+        final_dir = stage_dir / "experiment_final"
+        final_dir.mkdir(parents=True, exist_ok=True)
+        (final_dir / ".gitkeep").write_text("", encoding="utf-8")
+        artifacts = ("refinement_log.json", "experiment_final/")
         return StageResult(
             stage=Stage.ITERATIVE_REFINE,
             status=StageStatus.PAUSED,

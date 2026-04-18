@@ -368,10 +368,24 @@ class FigureAgentConfig:
     docker_image: str = "researchclaw/experiment:latest"
     # Code generation output format
     output_format: str = "python"  # "python" (matplotlib) or "latex" (TikZ/PGFPlots)
-    # Nano Banana (Gemini image generation)
+    # Image generation (multi-backend)
+    image_gen_enabled: bool = True
+    preferred_image_backend: str = ""  # "" = auto, "gemini"/"openai_image"/"smart_excalidraw"/"excalidraw_llm"/"matplotlib_fallback"
+    # Gemini backend
     gemini_api_key: str = ""  # or set GEMINI_API_KEY / GOOGLE_API_KEY env var
     gemini_model: str = "gemini-2.5-flash-image"
-    nano_banana_enabled: bool = True  # enable/disable Gemini image generation
+    # OpenAI Image backend
+    openai_api_key: str = ""  # or set OPENAI_API_KEY env var
+    openai_base_url: str = ""  # or set OPENAI_IMAGE_BASE_URL env var
+    openai_image_model: str = "gpt-image-1"
+    # Smart-Excalidraw backend
+    smart_excalidraw_url: str = ""  # or set SMART_EXCALIDRAW_URL env var
+    smart_excalidraw_llm_type: str = "openai"  # "openai"/"anthropic"/"google"
+    smart_excalidraw_llm_model: str = "claude-sonnet-4-20250514"
+    smart_excalidraw_llm_base_url: str = ""  # LLM base URL for SE server
+    smart_excalidraw_llm_api_key: str = ""  # LLM API key for SE server
+    # Legacy alias (backward compatibility)
+    nano_banana_enabled: bool = True  # if True, image_gen_enabled=True
     # Critic
     strict_mode: bool = False
     # Output
@@ -1109,8 +1123,18 @@ def _parse_figure_agent_config(data: dict[str, Any]) -> FigureAgentConfig:
         use_docker=(None if use_docker_raw is None else bool(use_docker_raw)),
         docker_image=data.get("docker_image", "researchclaw/experiment:latest"),
         output_format=data.get("output_format", "python"),
+        image_gen_enabled=bool(data.get("image_gen_enabled", True)),
+        preferred_image_backend=data.get("preferred_image_backend", ""),
         gemini_api_key=data.get("gemini_api_key", ""),
         gemini_model=data.get("gemini_model", "gemini-2.5-flash-image"),
+        openai_api_key=data.get("openai_api_key", ""),
+        openai_base_url=data.get("openai_base_url", ""),
+        openai_image_model=data.get("openai_image_model", "gpt-image-1"),
+        smart_excalidraw_url=data.get("smart_excalidraw_url", ""),
+        smart_excalidraw_llm_type=data.get("smart_excalidraw_llm_type", "openai"),
+        smart_excalidraw_llm_model=data.get("smart_excalidraw_llm_model", "claude-sonnet-4-20250514"),
+        smart_excalidraw_llm_base_url=data.get("smart_excalidraw_llm_base_url", ""),
+        smart_excalidraw_llm_api_key=data.get("smart_excalidraw_llm_api_key", ""),
         nano_banana_enabled=bool(data.get("nano_banana_enabled", True)),
         strict_mode=bool(data.get("strict_mode", False)),
         dpi=_safe_int(data.get("dpi"), 300),

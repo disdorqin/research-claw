@@ -850,6 +850,12 @@ def execute_pipeline(
     except Exception:  # noqa: BLE001
         logger.warning("Deliverables packaging failed (non-blocking)")
 
+    # --- Organize output into categorized subdirectories ---
+    try:
+        _organize_output_structure(run_dir, run_id)
+    except Exception:  # noqa: BLE001
+        logger.warning("Output structure organization failed (non-blocking)")
+
     # --- HITL: Finalize session state ---
     try:
         hitl_session = getattr(adapters, "hitl", None)
@@ -1163,6 +1169,102 @@ def _package_deliverables(
         len(packaged),
     )
     return dest
+
+
+def _organize_output_structure(run_dir: Path, run_id: str) -> None:
+    """Organize scattered run artifacts into categorized subdirectories.
+
+    After a pipeline run, many files end up loose in the run directory root
+    (diagnostics, logs, experiment data, scripts, etc.).  This function
+    moves them into a clean structure so the user can easily find what they
+    need and so successive runs don't collide.
+
+    Target layout::
+
+        run_dir/
+        ├── config/           ← Configuration snapshots
+        ├── scripts/          ← Generated Python scripts
+        ├── datasets/         ← Experiment data / generated datasets
+        ├── papers/           ← Final paper deliverables (symlink/copy)
+        ├── logs/             ← Debug logs, heartbeats, diagnostics
+        ├── deliverables/     ← (existing) Packaged final output
+        ├── stage-XX/         ← (existing) Per-stage raw artifacts
+        └── ...
+    """
+    _CATEGORY_MAP: dict[str, list[str]] = {
+        "config": [
+            "config.arc.yaml",
+            "config.competition.yaml",
+            "prompts.default.yaml",
+            "prompts.competition.yaml",
+            "experiment_spec.md",
+        ],
+        "scripts": [
+            "generate_figures.py",
+            "setup.py",
+            "requirements.txt",
+        ],
+        "datasets": [
+            "experiment_summary.json",
+            "experiment_diagnosis.json",
+            "experiment_repair_result.json",
+            "repair_prompt.txt",
+        ],
+        "papers": [],
+        "logs": [
+            "debug.log",
+            "heartbeat.json",
+            "checkpoint.json",
+            "pipeline_summary.json",
+            "quality_warning.txt",
+            "api_test_output.txt",
+            "api_test2.txt",
+            "api_test3.txt",
+        ],
+    }
+
+    moved: list[str] = []
+
+    for category, filenames in _CATEGORY_MAP.items():
+        cat_dir = run_dir / category
+        for fname in filenames:
+            src = run_dir / fname
+            if src.exists() and src.is_file():
+                cat_dir.mkdir(parents=True, exist_ok=True)
+                dest = cat_dir / fname
+                if dest.exists():
+                    dest.unlink()
+                shutil.move(str(src), str(dest))
+                moved.append(f"{category}/{fname}")
+
+    for item in run_dir.iterdir():
+        if item.is_file() and item.suffix in (".log",) and item.name not in moved:
+            log_dir = run_dir / "logs"
+            log_dir.mkdir(parents=True, exist_ok=True)
+            dest = log_dir / item.name
+            if dest.exists():
+                dest.unlink()
+            shutil.move(str(item), str(dest))
+            moved.append(f"logs/{item.name}")
+
+    deliverables = run_dir / "deliverables"
+    papers_dir = run_dir / "papers"
+    if deliverables.is_dir():
+        papers_dir.mkdir(parents=True, exist_ok=True)
+        for item in deliverables.iterdir():
+            if item.is_file() and item.suffix in (".md", ".tex", ".bib", ".pdf"):
+                dest = papers_dir / item.name
+                if not dest.exists():
+                    shutil.copy2(str(item), str(dest))
+                    moved.append(f"papers/{item.name}")
+
+    if moved:
+        logger.info(
+            "[%s] Output organized: %d files categorized → %s",
+            run_id,
+            len(moved),
+            ", ".join(sorted(set(m.split("/")[0] for m in moved))),
+        )
 
 
 def _version_rollback_stages(
@@ -1621,6 +1723,12 @@ def execute_iterative_pipeline(
             print(f"[{run_id}] Deliverables packaged →{deliverables_dir}")
     except Exception:  # noqa: BLE001
         logger.warning("Deliverables packaging failed (non-blocking)")
+
+    # --- Organize output into categorized subdirectories ---
+    try:
+        _organize_output_structure(run_dir, run_id)
+    except Exception:  # noqa: BLE001
+        logger.warning("Output structure organization failed (non-blocking)")
 
     return summary
 

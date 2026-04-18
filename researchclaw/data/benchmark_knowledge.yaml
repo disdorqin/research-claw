@@ -853,3 +853,188 @@ domains:
         source: "sklearn.neural_network.MLPClassifier(hidden_layer_sizes=(256, 128))"
         paper: "Standard neural network baseline"
         pip: []
+
+  medical_imaging:
+    keywords:
+      - medical imaging
+      - radiology
+      - pathology
+      - mri
+      - ct scan
+      - x-ray
+      - ultrasound
+      - histopathology
+      - biomedical imaging
+      - brain imaging
+      - alzheimer
+      - dementia
+      - tumor detection
+      - lesion segmentation
+    standard_benchmarks:
+      - name: MedMNIST
+        tier: 2
+        domain: medical_image_classification
+        size_mb: 80
+        classes: varies
+        samples: 708590
+        metrics: [accuracy, auroc, f1_score]
+        api: "datasets.load_dataset('tanganke/medmnist', cache_dir='/workspace/data/hf')"
+      - name: ChestX-ray14
+        tier: 2
+        domain: medical_image_classification
+        size_mb: 45000
+        classes: 14
+        samples: 112120
+        metrics: [auroc, accuracy]
+        api: "datasets.load_dataset('alkzar90/chest-x-ray', cache_dir='/workspace/data/hf')"
+      - name: ADNI (Alzheimer MRI)
+        tier: 2
+        domain: medical_image_classification
+        size_mb: 500
+        classes: 4
+        samples: 10000
+        metrics: [accuracy, auroc, f1_macro]
+        api: "datasets.load_dataset('Falah/Alzheimer_MRI', cache_dir='/workspace/data/hf')"
+    common_baselines:
+      - name: ResNet-50 (pretrained)
+        source: "torchvision.models.resnet50(pretrained=True)"
+        paper: "He et al., Deep Residual Learning, CVPR 2016"
+        pip: []
+      - name: DenseNet-121
+        source: "torchvision.models.densenet121(pretrained=True)"
+        paper: "Huang et al., Densely Connected Networks, CVPR 2017"
+        pip: []
+      - name: ViT-B/16
+        source: "timm.create_model('vit_base_patch16_224', pretrained=True)"
+        paper: "Dosovitskiy et al., An Image is Worth 16x16 Words, ICLR 2021"
+        pip: [timm]
+
+  biomarker_prediction:
+    keywords:
+      - biomarker
+      - biomarker prediction
+      - molecular prediction
+      - drug discovery
+      - protein
+      - genomics
+      - proteomics
+      - metabolomics
+      - multi-omics
+      - clinical prediction
+      - disease prediction
+      - patient outcome
+      - survival analysis
+      - molecular signature
+    standard_benchmarks:
+      - name: ADNI Clinical
+        tier: 2
+        domain: clinical_prediction
+        size_mb: 100
+        samples: 1700
+        metrics: [auroc, accuracy, f1_macro]
+        api: "datasets.load_dataset('Falah/Alzheimer_MRI', cache_dir='/workspace/data/hf')"
+      - name: TCGA (Cancer Genome Atlas)
+        tier: 2
+        domain: multi_omics_prediction
+        size_mb: 2000
+        samples: 11000
+        metrics: [auroc, c_index, accuracy]
+        api: "datasets.load_dataset('tcga', cache_dir='/workspace/data/hf')"
+        note: "Multi-omics cancer data"
+    common_baselines:
+      - name: Logistic Regression
+        source: "sklearn.linear_model.LogisticRegression(max_iter=1000)"
+        paper: "Standard statistical baseline"
+        pip: []
+      - name: Random Forest
+        source: "sklearn.ensemble.RandomForestClassifier(n_estimators=100)"
+        paper: "Breiman, Random Forests, Machine Learning 2001"
+        pip: []
+      - name: XGBoost
+        source: "xgboost.XGBClassifier(n_estimators=100, max_depth=6)"
+        paper: "Chen & Guestrin, XGBoost, KDD 2016"
+        pip: [xgboost]
+      - name: MLP
+        source: "torch.nn.Sequential(torch.nn.Linear(input_dim, 256), torch.nn.ReLU(), torch.nn.Linear(256, num_classes))"
+        paper: "Standard neural network baseline"
+        pip: []
+
+  time_series:
+    keywords:
+      - time series
+      - forecasting
+      - sequence prediction
+      - temporal
+      - time-series
+      - anomaly detection
+      - signal processing
+      - physiological signal
+      - eeg
+      - ecg
+      - vital signs
+    standard_benchmarks:
+      - name: PTB-XL (ECG)
+        tier: 2
+        domain: time_series_classification
+        size_mb: 1500
+        classes: 71
+        samples: 21837
+        metrics: [auroc, accuracy, f1_macro]
+        api: "datasets.load_dataset('physionet/ptb-xl', cache_dir='/workspace/data/hf')"
+      - name: UCR Archive
+        tier: 2
+        domain: time_series_classification
+        size_mb: 200
+        samples: varies
+        metrics: [accuracy, f1_macro]
+        api: "datasets.load_dataset('UCR_Archive', cache_dir='/workspace/data/hf')"
+    common_baselines:
+      - name: ARIMA
+        source: "statsmodels.tsa.arima.ARIMA(order=(1,1,1))"
+        paper: "Classical time series model"
+        pip: [statsmodels]
+      - name: LSTM
+        source: "torch.nn.LSTM(input_size, hidden_size, num_layers, batch_first=True)"
+        paper: "Hochreiter & Schmidhuber, Neural Computation 1997"
+        pip: []
+      - name: Transformer
+        source: "torch.nn.TransformerEncoderLayer(d_model=128, nhead=8)"
+        paper: "Vaswani et al., Attention Is All You Need, NeurIPS 2017"
+        pip: []
+
+  nlp_clinical:
+    keywords:
+      - clinical nlp
+      - medical text
+      - electronic health record
+      - ehr
+      - clinical notes
+      - clinical note
+      - medical entity recognition
+      - clinical decision support
+      - clinical classification
+      - clinical prediction
+      - biomedical text
+      - health record
+      - medical nlp
+      - pubmed
+    standard_benchmarks:
+      - name: PubMedQA
+        tier: 2
+        domain: medical_qa
+        size_mb: 50
+        samples: 1000
+        metrics: [accuracy, f1_score]
+        api: "datasets.load_dataset('pubmed_qa', cache_dir='/workspace/data/hf')"
+      - name: BioASQ
+        tier: 2
+        domain: biomedical_qa
+        size_mb: 200
+        samples: 4500
+        metrics: [accuracy, f1_score, map]
+        api: "datasets.load_dataset('bioasq', cache_dir='/workspace/data/hf')"
+    common_baselines:
+      - name: BioBERT
+        source: "transformers.AutoModel.from_pretrained('dmis-lab/biobert-base-cased-v1.1')"
+        paper: "Lee et al., BioBERT, Bioinformatics 2020"
+        pip: [transformers]

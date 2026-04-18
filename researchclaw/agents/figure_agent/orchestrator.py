@@ -3,7 +3,11 @@
 Flow:
   Decision Agent → analyzes paper → decides what figures are needed
     ├── code figures  → Planner → CodeGen → Renderer → Critic → retry
-    └── image figures → Nano Banana (Gemini image generation)
+    └── image figures → ImageGenAgent (multi-backend with fallback chain)
+       ├── gemini        — Gemini native image generation (best quality)
+       ├── openai_image  — OpenAI /v1/images/generations
+       ├── excalidraw_llm — LLM generates Excalidraw JSON → PNG
+       └── matplotlib_fallback — LLM generates matplotlib script
   → Integrator (combines all figures into manifest)
 
 Produces a ``FigurePlan`` consumed by paper draft and export stages.
@@ -22,8 +26,15 @@ from researchclaw.agents.base import AgentOrchestrator
 from researchclaw.agents.figure_agent.codegen import CodeGenAgent
 from researchclaw.agents.figure_agent.critic import CriticAgent
 from researchclaw.agents.figure_agent.decision import FigureDecisionAgent
+from researchclaw.agents.figure_agent.image_gen import (
+    ImageGenAgent,
+    BACKEND_GEMINI,
+    BACKEND_OPENAI_IMAGE,
+    BACKEND_EXCALIDRAW_LLM,
+    BACKEND_MATPLOTLIB_FALLBACK,
+    _detect_available_backends,
+)
 from researchclaw.agents.figure_agent.integrator import IntegratorAgent
-from researchclaw.agents.figure_agent.nano_banana import NanoBananaAgent
 from researchclaw.agents.figure_agent.planner import PlannerAgent
 from researchclaw.agents.figure_agent.renderer import RendererAgent
 
@@ -51,10 +62,24 @@ class FigureAgentConfig:
     docker_image: str = "researchclaw/experiment:latest"
     # Code generation
     output_format: str = "python"  # "python" or "latex"
-    # Nano Banana (Gemini image generation)
+    # Image generation (multi-backend)
+    image_gen_enabled: bool = True
+    preferred_image_backend: str = ""  # "" = auto-select by priority
+    # Gemini backend
     gemini_api_key: str = ""  # or set GEMINI_API_KEY env var
     gemini_model: str = "gemini-2.5-flash-image"
-    nano_banana_enabled: bool = True  # enable/disable image generation
+    # OpenAI Image backend
+    openai_api_key: str = ""  # or set OPENAI_API_KEY env var
+    openai_base_url: str = ""  # or set OPENAI_IMAGE_BASE_URL env var
+    openai_image_model: str = "gpt-image-1"
+    # Smart-Excalidraw backend
+    smart_excalidraw_url: str = ""  # or set SMART_EXCALIDRAW_URL env var
+    smart_excalidraw_llm_type: str = "openai"
+    smart_excalidraw_llm_model: str = "claude-sonnet-4-20250514"
+    smart_excalidraw_llm_base_url: str = ""
+    smart_excalidraw_llm_api_key: str = ""
+    # Legacy alias (kept for config backward compatibility)
+    nano_banana_enabled: bool = True  # if True, image_gen_enabled=True
     # Critic
     strict_mode: bool = False  # if True, any issue = fail
     # Output
@@ -124,7 +149,7 @@ class FigurePlan:
 
 
 class FigureOrchestrator(AgentOrchestrator):
-    """Coordinates Decision → (Code-to-Viz | Nano Banana) → Integrator."""
+    """Coordinates Decision → (Code-to-Viz | ImageGen) → Integrator."""
 
     def __init__(
         self,
@@ -168,13 +193,30 @@ class FigureOrchestrator(AgentOrchestrator):
             strict_mode=cfg.strict_mode,
         )
 
-        # Nano Banana agent (for conceptual/architectural images)
-        self._nano_banana: NanoBananaAgent | None = None
-        if cfg.nano_banana_enabled:
-            self._nano_banana = NanoBananaAgent(
+        # Image generation agent (multi-backend with fallback chain)
+        image_enabled = cfg.image_gen_enabled or cfg.nano_banana_enabled
+        self._image_gen: ImageGenAgent | None = None
+        if image_enabled:
+            se_config: dict[str, Any] = {}
+            if cfg.smart_excalidraw_llm_type:
+                se_config["type"] = cfg.smart_excalidraw_llm_type
+            if cfg.smart_excalidraw_llm_model:
+                se_config["model"] = cfg.smart_excalidraw_llm_model
+            if cfg.smart_excalidraw_llm_base_url:
+                se_config["baseUrl"] = cfg.smart_excalidraw_llm_base_url
+            if cfg.smart_excalidraw_llm_api_key:
+                se_config["apiKey"] = cfg.smart_excalidraw_llm_api_key
+
+            self._image_gen = ImageGenAgent(
                 llm,
                 gemini_api_key=cfg.gemini_api_key or None,
-                model=cfg.gemini_model,
+                gemini_model=cfg.gemini_model,
+                openai_api_key=cfg.openai_api_key or None,
+                openai_base_url=cfg.openai_base_url or None,
+                openai_image_model=cfg.openai_image_model,
+                smart_excalidraw_url=cfg.smart_excalidraw_url or None,
+                smart_excalidraw_config=se_config or None,
+                preferred_backend=cfg.preferred_image_backend or None,
             )
 
         self._integrator = IntegratorAgent(llm)
@@ -248,9 +290,9 @@ class FigureOrchestrator(AgentOrchestrator):
             )
             all_rendered.extend(rendered_code)
 
-        # ── Phase B: Nano Banana for image figures ────────────────────
-        if image_figures and self._nano_banana is not None:
-            rendered_images = self._run_nano_banana(
+        # ── Phase B: ImageGen for conceptual/architectural figures ─────
+        if image_figures and self._image_gen is not None:
+            rendered_images = self._run_image_gen(
                 image_figures=image_figures,
                 context=context,
                 output_dir=output_dir,
@@ -258,8 +300,15 @@ class FigureOrchestrator(AgentOrchestrator):
             all_rendered.extend(rendered_images)
         elif image_figures:
             self.logger.warning(
-                "Nano Banana disabled — skipping %d image figures",
+                "Image generation disabled — skipping %d image figures. "
+                "Available backends: %s",
                 len(image_figures),
+                _detect_available_backends(
+                    gemini_api_key=self._config.gemini_api_key,
+                    openai_api_key=self._config.openai_api_key,
+                    openai_base_url=self._config.openai_base_url,
+                    llm_available=True,
+                ),
             )
 
         # ── Phase C: Integrate all figures ────────────────────────────
@@ -443,45 +492,57 @@ class FigureOrchestrator(AgentOrchestrator):
         return final_rendered
 
     # ------------------------------------------------------------------
-    # Nano Banana pipeline (conceptual/architectural images)
+    # Image generation pipeline (multi-backend with fallback)
     # ------------------------------------------------------------------
 
-    def _run_nano_banana(
+    def _run_image_gen(
         self,
         image_figures: list[dict[str, Any]],
         context: dict[str, Any],
         output_dir: Path,
     ) -> list[dict[str, Any]]:
-        """Run Nano Banana for conceptual/architectural figures."""
-        if self._nano_banana is None:
+        """Run ImageGenAgent for conceptual/architectural figures.
+
+        Uses multi-backend fallback chain:
+        gemini → openai_image → excalidraw_llm → matplotlib_fallback
+        """
+        if self._image_gen is None:
             return []
 
+        backends = self._image_gen.available_backends
         self.logger.info(
-            "Phase B: Generating %d image figures via Nano Banana",
+            "Phase B: Generating %d image figures via ImageGen "
+            "(available backends: %s)",
             len(image_figures),
+            backends,
         )
 
-        # Assign figure IDs
         for i, fig in enumerate(image_figures):
             if "figure_id" not in fig:
                 fig["figure_id"] = (
                     f"{fig.get('figure_type', 'conceptual')}_{i + 1}"
                 )
 
-        nb_result = self._nano_banana.execute({
+        ig_result = self._image_gen.execute({
             "image_figures": image_figures,
             "topic": context.get("topic", ""),
             "output_dir": str(output_dir),
         })
-        self._accumulate(nb_result)
-        self._save_artifact("nano_banana_results.json", nb_result.data)
+        self._accumulate(ig_result)
+        self._save_artifact("image_gen_results.json", ig_result.data)
 
-        generated = nb_result.data.get("generated", [])
-        success_count = nb_result.data.get("count", 0)
+        generated = ig_result.data.get("generated", [])
+        success_count = ig_result.data.get("count", 0)
+
+        backend_summary: dict[str, int] = {}
+        for g in generated:
+            if g.get("success"):
+                b = g.get("backend", "unknown")
+                backend_summary[b] = backend_summary.get(b, 0) + 1
 
         self.logger.info(
-            "Nano Banana: %d/%d images generated successfully",
-            success_count, len(image_figures),
+            "ImageGen: %d/%d images generated successfully (backends: %s)",
+            success_count, len(image_figures), backend_summary,
         )
 
         return generated

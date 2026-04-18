@@ -42,6 +42,10 @@ _DOMAIN_TO_HF_TASK: dict[str, list[str]] = {
     "reinforcement_learning": ["reinforcement-learning"],
     "tabular_learning": ["tabular-classification", "tabular-regression"],
     "llm_finetuning": ["text-generation"],
+    "medical_imaging": ["image-classification"],
+    "biomarker_prediction": ["tabular-classification", "tabular-regression"],
+    "time_series": ["time-series-forecasting"],
+    "nlp_clinical": ["text-classification", "question-answering"],
 }
 
 
