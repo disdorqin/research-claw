@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import json
 import os
 import shutil
 import subprocess
@@ -159,8 +160,43 @@ def _ensure_run_dir_skeleton(run_dir: Path) -> None:
     This ensures every run starts with a consistent, organized layout
     instead of dumping everything into a flat directory.
     """
-    for subdir in ("config", "scripts", "datasets", "papers", "logs"):
+    for subdir in ("config", "scripts", "datasets", "papers", "logs", "figures"):
         (run_dir / subdir).mkdir(parents=True, exist_ok=True)
+
+
+def _snapshot_config(run_dir: Path, config_path: Path) -> None:
+    """Snapshot the config file into run_dir/config/ for full reproducibility.
+
+    Each run is self-contained: the exact configuration that produced it
+    is preserved inside the run directory, so you can always trace back
+    *what settings* were used — even if the original config.arc.yaml
+    is later modified or deleted.
+
+    On resume (--resume / --from-stage), if a snapshot already exists,
+    it is NOT overwritten to preserve the original run's configuration.
+    """
+    dest_dir = run_dir / "config"
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    dest_config = dest_dir / config_path.name if config_path else None
+    if dest_config and dest_config.exists():
+        return
+    if config_path and config_path.is_file():
+        shutil.copy2(config_path, dest_dir / config_path.name)
+    run_meta_path = dest_dir / "run_meta.json"
+    if not run_meta_path.exists():
+        run_meta = {
+            "snapshot_source": str(config_path) if config_path else "",
+            "snapshot_time": _utcnow_iso(),
+        }
+        run_meta_path.write_text(
+            json.dumps(run_meta, indent=2), encoding="utf-8"
+        )
+
+
+def _utcnow_iso() -> str:
+    from datetime import datetime, timezone
+
+    return datetime.now(timezone.utc).isoformat(timespec="seconds")
 
 
 def cmd_run(args: argparse.Namespace) -> int:
@@ -264,6 +300,8 @@ def cmd_run(args: argparse.Namespace) -> int:
 
     run_dir.mkdir(parents=True, exist_ok=True)
     _ensure_run_dir_skeleton(run_dir)
+
+    _snapshot_config(run_dir, config_path)
 
     if config.knowledge_base.root:
         kb_root_path = Path(config.knowledge_base.root)

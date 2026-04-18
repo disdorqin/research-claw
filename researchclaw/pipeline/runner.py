@@ -1198,17 +1198,21 @@ def _organize_output_structure(run_dir: Path, run_id: str) -> None:
             "prompts.default.yaml",
             "prompts.competition.yaml",
             "experiment_spec.md",
+            "run_meta.json",
         ],
         "scripts": [
             "generate_figures.py",
             "setup.py",
             "requirements.txt",
+            "experiment.py",
         ],
         "datasets": [
             "experiment_summary.json",
+            "experiment_summary_best.json",
             "experiment_diagnosis.json",
             "experiment_repair_result.json",
             "repair_prompt.txt",
+            "analysis_best.md",
         ],
         "papers": [],
         "logs": [
@@ -1257,6 +1261,26 @@ def _organize_output_structure(run_dir: Path, run_id: str) -> None:
                 if not dest.exists():
                     shutil.copy2(str(item), str(dest))
                     moved.append(f"papers/{item.name}")
+
+    figures_dir = run_dir / "figures"
+    figures_dir.mkdir(parents=True, exist_ok=True)
+    for stage_dir in sorted(run_dir.glob("stage-*")):
+        charts_dir = stage_dir / "charts"
+        if charts_dir.is_dir():
+            for item in charts_dir.iterdir():
+                if item.is_file() and item.suffix in (".png", ".pdf", ".svg", ".jpg"):
+                    dest = figures_dir / f"{stage_dir.name}_{item.name}"
+                    if not dest.exists():
+                        shutil.copy2(str(item), str(dest))
+                        moved.append(f"figures/{stage_dir.name}_{item.name}")
+    deliverables_charts = deliverables / "charts" if deliverables.is_dir() else None
+    if deliverables_charts and deliverables_charts.is_dir():
+        for item in deliverables_charts.iterdir():
+            if item.is_file() and item.suffix in (".png", ".pdf", ".svg", ".jpg"):
+                dest = figures_dir / item.name
+                if not dest.exists():
+                    shutil.copy2(str(item), str(dest))
+                    moved.append(f"figures/{item.name}")
 
     if moved:
         logger.info(
