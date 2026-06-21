@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 420" width="1200" height="420" role="img" aria-label="research-claw banner">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#050a18"/>
+      <stop offset="100%" stop-color="#0a1628"/>
+    </linearGradient>
+    <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#A3E635" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#A3E635"/>
+      <stop offset="100%" stop-color="#A3E635" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <pattern id="grid" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#A3E635" stroke-width="0.3" opacity="0.15"/>
+    </pattern>
+  </defs>
+  
+  <rect width="1200" height="420" fill="url(#bg)"/>
+  <rect width="1200" height="420" fill="url(#grid)"/>
+  
+  <!-- Top accent line -->
+  <line x1="0" y1="3" x2="1200" y2="3" stroke="url(#lineGrad)" stroke-width="2" filter="url(#glow)"/>
+  
+  <!-- Decorative circuit lines -->
+  <g opacity="0.4">
+    <polyline points="60,210 200,210 260,170 400,170 460,210 600,210" fill="none" stroke="#A3E635" stroke-width="1.2" filter="url(#glow)">
+      <animate attributeName="stroke-dashoffset" values="0;20" dur="2s" repeatCount="indefinite"/>
+    </polyline>
+    <polyline points="600,210 740,210 800,250 940,250 1000,210 1140,210" fill="none" stroke="#A3E635" stroke-width="1.2" filter="url(#glow)">
+      <animate attributeName="stroke-dashoffset" values="20;0" dur="2s" repeatCount="indefinite"/>
+    </polyline>
+  </g>
+  
+  <!-- Main title -->
+  <text x="600" y="185" text-anchor="middle" font-family="ui-monospace,monospace" font-size="56" font-weight="900" fill="#A3E635" filter="url(#glow)" letter-spacing="6">research-claw</text>
+  
+  <!-- Subtitle -->
+  <text x="600" y="240" text-anchor="middle" font-family="ui-monospace,monospace" font-size="18" fill="#c9d1d9" letter-spacing="3">Multi-Agent Research Paper Factory</text>
+  
+  <!-- Bottom line -->
+  <line x1="300" y1="300" x2="900" y2="300" stroke="url(#lineGrad)" stroke-width="1" opacity="0.6"/>
+  
+  <!-- Status badge -->
+  <rect x="490" y="320" width="220" height="36" rx="18" fill="none" stroke="#A3E635" stroke-width="1.2" filter="url(#glow)" opacity="0.8"/>
+  <text x="600" y="344" text-anchor="middle" font-family="ui-monospace,monospace" font-size="13" fill="#A3E635" letter-spacing="2">● ACTIVE</text>
+</svg>
