@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 520" width="1200" height="520" role="img" aria-label="research-claw architecture">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#050a18"/>
+      <stop offset="100%" stop-color="#0a1628"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="1200" height="520" fill="url(#bg)"/>
+  <text x="600" y="50" text-anchor="middle" font-family="ui-monospace,monospace" font-size="28" fill="#A3E635" filter="url(#glow)" letter-spacing="4">research-claw · SYSTEM ARCHITECTURE</text>
+  <line x1="100" y1="80" x2="1100" y2="80" stroke="#A3E635" stroke-width="1" opacity="0.5"/>
+  
+  <!-- Central core -->
+  <rect x="480" y="200" width="240" height="80" rx="8" fill="#0d1117" stroke="#A3E635" stroke-width="2" filter="url(#glow)"/>
+  <text x="600" y="240" text-anchor="middle" font-family="ui-monospace,monospace" font-size="16" fill="#A3E635" font-weight="700">CORE ENGINE</text>
+  <text x="600" y="262" text-anchor="middle" font-family="ui-monospace,monospace" font-size="12" fill="#8b949e">Orchestrator</text>
+  
+  <!-- Module boxes -->
+  <rect x="80" y="120" width="180" height="60" rx="6" fill="#0d1117" stroke="#A3E635" stroke-width="1.2" opacity="0.9"/>
+  <text x="170" y="148" text-anchor="middle" font-family="ui-monospace,monospace" font-size="13" fill="#A3E635" font-weight="600">Topic Agent</text>
+  <line x1="600" y1="280" x2="170" y2="120" stroke="#A3E635" stroke-width="1" opacity="0.5" stroke-dasharray="4,4">
+    <animate attributeName="stroke-dashoffset" values="0;8" dur="1s" repeatCount="indefinite"/>
+  </line>
+  <rect x="80" y="320" width="180" height="60" rx="6" fill="#0d1117" stroke="#A3E635" stroke-width="1.2" opacity="0.9"/>
+  <text x="170" y="348" text-anchor="middle" font-family="ui-monospace,monospace" font-size="13" fill="#A3E635" font-weight="600">Writing Agent</text>
+  <line x1="600" y1="240" x2="170" y2="380" stroke="#A3E635" stroke-width="1" opacity="0.5" stroke-dasharray="4,4">
+    <animate attributeName="stroke-dashoffset" values="0;8" dur="1s" repeatCount="indefinite"/>
+  </line>
+  <rect x="820" y="120" width="180" height="60" rx="6" fill="#0d1117" stroke="#A3E635" stroke-width="1.2" opacity="0.9"/>
+  <text x="910" y="148" text-anchor="middle" font-family="ui-monospace,monospace" font-size="13" fill="#A3E635" font-weight="600">Review Agent</text>
+  <line x1="820" y1="280" x2="910" y2="120" stroke="#A3E635" stroke-width="1" opacity="0.5" stroke-dasharray="4,4">
+    <animate attributeName="stroke-dashoffset" values="0;8" dur="1s" repeatCount="indefinite"/>
+  </line>
+  <rect x="820" y="320" width="180" height="60" rx="6" fill="#0d1117" stroke="#A3E635" stroke-width="1.2" opacity="0.9"/>
+  <text x="910" y="348" text-anchor="middle" font-family="ui-monospace,monospace" font-size="13" fill="#A3E635" font-weight="600">Export Pipeline</text>
+  <line x1="820" y1="240" x2="910" y2="380" stroke="#A3E635" stroke-width="1" opacity="0.5" stroke-dasharray="4,4">
+    <animate attributeName="stroke-dashoffset" values="0;8" dur="1s" repeatCount="indefinite"/>
+  </line>
+</svg>
