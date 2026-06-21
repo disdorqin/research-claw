@@ -1,0 +1,24 @@
+name: Bug Report
+description: File a bug report
+title: "[BUG]: "
+labels: ["bug"]
+
+body:
+  - type: input
+    id: description
+    attributes:
+      label: Bug Description
+      description: What went wrong?
+      placeholder: Describe the bug...
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to Reproduce
+      description: How can we reproduce this?
+  - type: input
+    id: env
+    attributes:
+      label: Environment
+      description: OS, Python/Node version, etc.
