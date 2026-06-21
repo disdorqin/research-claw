@@ -1,0 +1,23 @@
+name: Feature Request
+description: Suggest an idea
+title: "[FEAT]: "
+labels: ["enhancement"]
+
+body:
+  - type: input
+    id: summary
+    attributes:
+      label: Summary
+      description: One-line summary of the feature
+    validations:
+      required: true
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivation
+      description: Why do we need this?
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: How should it work?
