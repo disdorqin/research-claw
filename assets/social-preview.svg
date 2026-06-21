@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" width="1280" height="640" role="img" aria-label="research-claw social preview">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#050a18"/>
+      <stop offset="100%" stop-color="#0a1628"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="1280" height="640" fill="url(#bg)"/>
+  <rect x="0" y="0" width="1280" height="640" fill="url(#bg)"/>
+  <line x1="0" y1="4" x2="1280" y2="4" stroke="#A3E635" stroke-width="3" filter="url(#glow)"/>
+  <text x="640" y="280" text-anchor="middle" font-family="ui-monospace,monospace" font-size="72" font-weight="900" fill="#A3E635" filter="url(#glow)" letter-spacing="8">research-claw</text>
+  <text x="640" y="350" text-anchor="middle" font-family="ui-monospace,monospace" font-size="24" fill="#c9d1d9" letter-spacing="4">Multi-Agent Research Paper Factory</text>
+  <line x1="340" y1="420" x2="940" y2="420" stroke="#A3E635" stroke-width="1.5" opacity="0.6" filter="url(#glow)"/>
+  <text x="640" y="480" text-anchor="middle" font-family="ui-monospace,monospace" font-size="16" fill="#8b949e" letter-spacing="3">disdorqin · GitHub</text>
+</svg>
