@@ -1,40 +1,20 @@
-# Contributing to AutoResearchClaw
+# Contributing
 
-## Setup
+Thank you for your interest in contributing!
 
-1. Fork and clone the repo
-2. Create a venv and install with dev extras:
-   ```
-   python3 -m venv .venv && source .venv/bin/activate
-   pip install -e ".[dev]"
-   ```
-3. Generate your local config:
-   ```
-   researchclaw init
-   ```
-4. Edit `config.arc.yaml` with your LLM settings
+## How to Contribute
 
-## Config Convention
+1. Fork the repo
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'feat: add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-- `config.researchclaw.example.yaml` — tracked template (do not add secrets)
-- `config.arc.yaml` — your local config (gitignored, created by `researchclaw init`)
-- `config.yaml` — also gitignored, supported as fallback
+## Development Setup
 
-## Running Tests
+See the README for setup instructions.
 
-```
-pytest tests/
-```
+## Code Style
 
-## Checking Your Environment
-
-```
-researchclaw doctor
-```
-
-## PR Guidelines
-
-- Branch from main
-- One concern per PR
-- Ensure `pytest tests/` passes
-- Include tests for new functionality
+- Python: Follow PEP 8
+- TypeScript/JavaScript: Use the project's existing style
