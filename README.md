@@ -14,11 +14,11 @@
 
 ---
 
-> research-claw is a multi-agent system that automates the research paper generation pipeline. From topic to publication-ready draft: it coordinates specialized agents for literature review, methodology design, experiment planning, writing, and review.
+> research-claw is a multi-agent system that automates the research paper generation pipeline. From a topic to a structured first draft, it coordinates specialized agents for literature review, methodology design, experiment planning, writing, and review.
 
 ## Why research-claw Exists
 
-Writing a research paper involves well-defined stages: survey, hypothesize, experiment, write, review. research-claw assigns each stage to a specialized agent — and coordinates them into a pipeline that produces publication-ready output.
+Writing a research paper involves well-defined stages: survey, hypothesize, experiment, write, review. research-claw assigns each stage to a specialized agent — and coordinates them into a pipeline that produces a structured first draft.
 
 ## Features
 
@@ -34,6 +34,10 @@ Writing a research paper involves well-defined stages: survey, hypothesize, expe
 <div align="center">
   <img src="assets/architecture.svg" width="100%" alt="Architecture" />
 </div>
+
+## Documentation
+
+- [Architecture](docs/architecture.md) — agent pipeline and data flow
 
 ## Quick Start
 
